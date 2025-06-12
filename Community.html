@@ -491,6 +491,7 @@
                         }
                     });
                 }
+                renderChatHistory();
             }, 100);
         }
 
@@ -510,39 +511,60 @@
             selectCommunity(key);
         }
 
+        //  history chat komunitas di localStorage
         function sendChat() {
             const input = document.getElementById('chatInput');
             const chatBox = document.getElementById('chatBox');
             if (input && chatBox && input.value.trim() !== '' && selectedCommunityKey) {
                 const c = communities[selectedCommunityKey];
-                // Pilih anggota random dari komunitas
                 const idx = Math.floor(Math.random() * c.members.length);
                 const member = c.members[idx];
-                // Hapus pesan default jika ada
-                if (chatBox.children.length === 1 && chatBox.children[0].classList.contains('text-gray-400')) {
-                    chatBox.innerHTML = '';
-                }
-                // Buat bubble chat sesuai gambar referensi
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble-chat';
-                bubble.innerHTML = `
-            <img src="${member.avatar}" class="bubble-avatar" alt="${member.name}">
-            <div class="bubble-content">
-                <div class="bubble-name">${member.name}</div>
-                <div class="bubble-text">${input.value}</div>
-                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                    <span>${waktu}</span>
-                </div>
-            </div>
-            <div class="bubble-tail">
-                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M24 0 Q0 12 12 24" fill="none" stroke="#222" stroke-width="3"/></svg>
-            </div>
-        `;
-                chatBox.appendChild(bubble);
-                chatBox.scrollTop = chatBox.scrollHeight;
+                // Format waktu (jam:menit, 2 digit)
+                const now = new Date();
+                const jam = now.getHours().toString().padStart(2, '0');
+                const menit = now.getMinutes().toString().padStart(2, '0');
+                const waktu = jam + '.' + menit;
+                // Simpan ke localStorage
+                let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+                if (!chatHistory[selectedCommunityKey]) chatHistory[selectedCommunityKey] = [];
+                chatHistory[selectedCommunityKey].push({
+                    name: member.name,
+                    avatar: member.avatar,
+                    text: input.value,
+                    time: waktu
+                });
+                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+                renderChatHistory();
                 input.value = '';
                 input.focus();
             }
+        }
+
+        function renderChatHistory() {
+            const chatBox = document.getElementById('chatBox');
+            if (!chatBox || !selectedCommunityKey) return;
+            let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            const history = chatHistory[selectedCommunityKey] || [];
+            if (history.length === 0) {
+                chatBox.innerHTML = '<div class="text-gray-400 text-sm text-center">Belum ada pesan. Mulai chat dengan komunitas!</div>';
+                return;
+            }
+            chatBox.innerHTML = history.map(msg => `
+                <div class="bubble-chat">
+                    <img src="${msg.avatar}" class="bubble-avatar" alt="${msg.name}">
+                    <div class="bubble-content">
+                        <div class="bubble-name">${msg.name}</div>
+                        <div class="bubble-text">${msg.text}</div>
+                        <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <span>${msg.time}</span>
+                        </div>
+                    </div>
+                    <div class="bubble-tail">
+                        <svg width="24" height="24" viewBox="0 0 24 24"><path d="M24 0 Q0 12 12 24" fill="none" stroke="#222" stroke-width="3"/></svg>
+                    </div>
+                </div>
+            `).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         // Show modal
