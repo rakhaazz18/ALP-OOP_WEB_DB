@@ -163,7 +163,7 @@
         </div>
     </div>
     <script>
-        // Data komunitas dengan nama anggota unik dan avatar random
+        // Data komunitas 
         const communities = {
             'Peduli_Mks': {
                 name: 'Peduli_Mks',
@@ -321,7 +321,7 @@
         function renderCommunityList() {
             const list = document.getElementById('communityList');
             if (!list) return;
-            // Urutkan: komunitas yang sudah join (yang dipilih paling atas jika baru join)
+            // Pengurutan Komunitas
             let keys = Object.keys(communities);
             if (selectedCommunityKey && joinedCommunities.includes(selectedCommunityKey)) {
                 keys = [selectedCommunityKey, ...joinedCommunities.filter(k => k !== selectedCommunityKey), ...keys.filter(k => !joinedCommunities.includes(k) && k !== selectedCommunityKey)];
@@ -331,7 +331,7 @@
             list.innerHTML = keys.map(key => {
                 const c = communities[key];
                 const joined = joinedCommunities.includes(key);
-                // Tetap gunakan gambar komunitas asli dari HTML
+                // ga,mbar sebelumnya
                 let imgUrl = '';
                 switch (key) {
                     case 'Peduli_Mks': imgUrl = 'https://lppm.unusa.ac.id/wp-content/uploads/2023/09/Picture1.png'; break;
@@ -428,7 +428,7 @@
                 if (chatBox.children.length === 1 && chatBox.children[0].classList.contains('text-gray-400')) {
                     chatBox.innerHTML = '';
                 }
-                // Buat bubble chat sesuai gambar referensi
+                // bubble chat nya
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble-chat';
                 bubble.innerHTML = `
