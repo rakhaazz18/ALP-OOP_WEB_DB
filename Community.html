@@ -60,6 +60,52 @@
             color: #222;
             word-break: break-word;
         }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0 0 0 / 60%);
+        }
+
+        .modal.flex {
+            display: flex !important;
+        }
+
+        .modal.hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            background-color: #f6fdf4;
+            margin: auto;
+            padding: 24px 18px;
+            border: 1.5px solid #b5d6a2;
+            width: 95%;
+            max-width: 420px;
+            border-radius: 14px;
+            box-shadow: 0 4px 24px 0 rgba(103, 142, 52, 0.10);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #678e34;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -82,17 +128,20 @@
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Sidebar komunitas -->
             <aside class="lg:w-1/4 w-full">
-                <div class="bg-white rounded-xl shadow p-4 relative">
-                    <button
-                        class="absolute top-4 right-4 bg-[#678E34] text-white px-3 py-1 md:px-4 md:py-2 rounded-lg font-semibold hover:bg-[#4a6b24] transition flex items-center gap-1 md:gap-2 text-sm md:text-base w-auto md:w-fit min-w-[44px] min-h-[36px]"
-                        style="min-width:44px;min-height:36px;" onclick="alert('Fitur Create Community coming soon!')">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            class="w-5 h-5 md:w-6 md:h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span class="hidden sm:inline">Create Community</span>
-                    </button>
-                    <h2 class="text-lg font-semibold mb-4">Pilih Komunitas</h2>
+                <div class="bg-white rounded-xl shadow p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold">Pilih Komunitas</h2>
+                        <button
+                            class="bg-[#678E34] text-white px-2 py-1 md:px-3 md:py-1.5 rounded-lg font-semibold hover:bg-[#4a6b24] transition flex items-center gap-1 md:gap-2 text-xs md:text-sm w-auto md:w-fit min-w-[36px] min-h-[32px]"
+                            style="min-width:36px;min-height:32px;" onclick="openCreateCommunityModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-4 h-4 md:w-5 md:h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span class="hidden sm:inline">Create Community</span>
+                        </button>
+                    </div>
                     <div class="max-h-96 overflow-y-auto pr-2" style="scrollbar-width: thin;">
                         <ul id="communityList" class="space-y-2">
                             <li><button
@@ -162,6 +211,44 @@
             </main>
         </div>
     </div>
+
+    <!-- Modal Create Community -->
+    <div id="createCommunityModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateCommunityModal()">&times;</span>
+            <h2 class="text-xl font-bold mb-4 text-[#678E34]">Buat Komunitas Baru</h2>
+            <form id="createCommunityForm" class="space-y-3">
+                <div>
+                    <label class="block font-semibold mb-1">Nama Anda</label>
+                    <input type="text" name="nama" class="w-full border rounded px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Alamat</label>
+                    <input type="text" name="alamat" class="w-full border rounded px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Nama Komunitas</label>
+                    <input type="text" name="namakomunitas" class="w-full border rounded px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Campaign (pisahkan dengan koma)</label>
+                    <input type="text" name="campaign" class="w-full border rounded px-3 py-2"
+                        placeholder="Contoh: Bersih Sungai, Edukasi Sampah" required>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Deskripsi Komunitas</label>
+                    <textarea name="deskripsi" class="w-full border rounded px-3 py-2" required></textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Logo Komunitas</label>
+                    <input type="file" name="logo" accept="image/*" class="w-full border rounded px-3 py-2">
+                </div>
+                <button type="submit"
+                    class="w-full bg-[#678E34] text-white py-2 rounded font-bold hover:bg-[#4a6b24]">Create</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Data komunitas dengan nama anggota unik dan avatar random
         const communities = {
@@ -328,22 +415,28 @@
             } else {
                 keys = [...joinedCommunities, ...keys.filter(k => !joinedCommunities.includes(k))];
             }
+            let customLogos = {};
+            try { customLogos = JSON.parse(localStorage.getItem('customCommunityLogos') || '{}'); } catch { }
             list.innerHTML = keys.map(key => {
                 const c = communities[key];
                 const joined = joinedCommunities.includes(key);
-                // Tetap gunakan gambar komunitas asli dari HTML
                 let imgUrl = '';
-                switch (key) {
-                    case 'Peduli_Mks': imgUrl = 'https://lppm.unusa.ac.id/wp-content/uploads/2023/09/Picture1.png'; break;
-                    case 'Recycle.id': imgUrl = 'https://morethanstrata.com.au/wp-content/uploads/2023/09/1123213213123.jpg'; break;
-                    case 'Clean.id': imgUrl = 'https://neatclean.com/cdn/shop/articles/Non-Toxic-Cleaning---Neat-Clean_9a290919-5302-4b53-ae29-311e9ec509ab.jpg?v=1742909575'; break;
-                    case 'HijauBersama': imgUrl = 'https://dispendik.surabaya.go.id/wp-content/uploads/2015/03/banu-smp-pgri-6.jpg'; break;
-                    case 'EcoYouth': imgUrl = 'https://newsroom.toyota.co.id/app/sam/assets/news/9a49149705bf0b8e38690e6ca6d6d5ed.jpeg'; break;
-                    case 'ZeroWaste': imgUrl = 'https://shopequo.com/cdn/shop/articles/Zero-Waste_2bde2b51-61ac-48a6-b1ee-47b02ba2a641.png?v=1701594753&width=1600'; break;
-                    case 'GreenSteps': imgUrl = 'https://loquiz.com/wpmainpage/wp-content/uploads/2022/08/Logo-Green-Steps.png'; break;
-                    case 'EcoWarriors': imgUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEC_u8VMK6fgf2lz_mTeHkegN_OegS8egMrQ&s'; break;
-                    case 'RecycleHeroes': imgUrl = 'https://s3-eu-west-1.amazonaws.com/spacehive/bf86e8b5-3ebe-48dc-8268-a4e792d0fb74_xlarge_eco-warrior.jpg'; break;
-                    case 'SampahBijak': imgUrl = 'https://www.kreasa.id/wp-content/uploads/2021/06/kreasa-bijak-kelola-sampah.png'; break;
+                if (customLogos[key]) {
+                    imgUrl = customLogos[key];
+                } else {
+                    switch (key) {
+                        case 'Peduli_Mks': imgUrl = 'https://lppm.unusa.ac.id/wp-content/uploads/2023/09/Picture1.png'; break;
+                        case 'Recycle.id': imgUrl = 'https://morethanstrata.com.au/wp-content/uploads/2023/09/1123213213123.jpg'; break;
+                        case 'Clean.id': imgUrl = 'https://neatclean.com/cdn/shop/articles/Non-Toxic-Cleaning---Neat-Clean_9a290919-5302-4b53-ae29-311e9ec509ab.jpg?v=1742909575'; break;
+                        case 'HijauBersama': imgUrl = 'https://dispendik.surabaya.go.id/wp-content/uploads/2015/03/banu-smp-pgri-6.jpg'; break;
+                        case 'EcoYouth': imgUrl = 'https://newsroom.toyota.co.id/app/sam/assets/news/9a49149705bf0b8e38690e6ca6d6d5ed.jpeg'; break;
+                        case 'ZeroWaste': imgUrl = 'https://shopequo.com/cdn/shop/articles/Zero-Waste_2bde2b51-61ac-48a6-b1ee-47b02ba2a641.png?v=1701594753&width=1600'; break;
+                        case 'GreenSteps': imgUrl = 'https://loquiz.com/wpmainpage/wp-content/uploads/2022/08/Logo-Green-Steps.png'; break;
+                        case 'EcoWarriors': imgUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEC_u8VMK6fgf2lz_mTeHkegN_OegS8egMrQ&s'; break;
+                        case 'RecycleHeroes': imgUrl = 'https://s3-eu-west-1.amazonaws.com/spacehive/bf86e8b5-3ebe-48dc-8268-a4e792d0fb74_xlarge_eco-warrior.jpg'; break;
+                        case 'SampahBijak': imgUrl = 'https://www.kreasa.id/wp-content/uploads/2021/06/kreasa-bijak-kelola-sampah.png'; break;
+                        default: imgUrl = c.logo || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                    }
                 }
                 return `<li><button class="w-full flex items-center gap-3 text-left px-3 py-2 rounded hover:bg-green-100 relative" onclick="selectCommunity('${key}')">
             <img src="${imgUrl}" alt="${c.name}" class="w-8 h-8 rounded object-cover">
@@ -428,7 +521,12 @@
                 if (chatBox.children.length === 1 && chatBox.children[0].classList.contains('text-gray-400')) {
                     chatBox.innerHTML = '';
                 }
-                // Buat bubble chat sesuai gambar referensi
+                // Format waktu (jam:menit, 2 digit)
+                const now = new Date();
+                const jam = now.getHours().toString().padStart(2, '0');
+                const menit = now.getMinutes().toString().padStart(2, '0');
+                const waktu = jam + '.' + menit;
+                // Buat bubble chat tanpa ikon centang
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble-chat';
                 bubble.innerHTML = `
@@ -436,6 +534,9 @@
             <div class="bubble-content">
                 <div class="bubble-name">${member.name}</div>
                 <div class="bubble-text">${input.value}</div>
+                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                    <span>${waktu}</span>
+                </div>
             </div>
             <div class="bubble-tail">
                 <svg width="24" height="24" viewBox="0 0 24 24"><path d="M24 0 Q0 12 12 24" fill="none" stroke="#222" stroke-width="3"/></svg>
@@ -448,10 +549,70 @@
             }
         }
 
+        // Show modal
+        function openCreateCommunityModal() {
+            var modal = document.getElementById('createCommunityModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCreateCommunityModal() {
+            var modal = document.getElementById('createCommunityModal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+        // Handle form submit
+        const createForm = document.getElementById('createCommunityForm');
+        if (createForm) {
+            createForm.onsubmit = function (e) {
+                e.preventDefault();
+                const fd = new FormData(createForm);
+                const nama = fd.get('nama');
+                const alamat = fd.get('alamat');
+                const namakomunitas = fd.get('namakomunitas');
+                const campaign = fd.get('campaign').split(',').map(s => s.trim()).filter(Boolean);
+                const deskripsi = fd.get('deskripsi');
+                const logoFile = fd.get('logo');
+                let logoUrl = '';
+                if (logoFile && logoFile.size > 0) {
+                    const reader = new FileReader();
+                    reader.onload = function (evt) {
+                        logoUrl = evt.target.result;
+                        addCommunity();
+                    };
+                    reader.readAsDataURL(logoFile);
+                } else {
+                    logoUrl = 'https://w7.pngwing.com/pngs/370/535/png-transparent-person-thinking-illustration-question-mark-animation-question-text-cartoon-desktop-wallpaper.png'; // default icon
+                    addCommunity();
+                }
+                function addCommunity() {
+                    const key = namakomunitas.replace(/\s+/g, '_') + '_' + Date.now();
+                    communities[key] = {
+                        name: namakomunitas,
+                        description: deskripsi,
+                        events: campaign,
+                        members: [{ name: nama, avatar: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(nama) + '&background=678E34&color=fff&rounded=true&size=48' }],
+                        logo: logoUrl
+                    };
+                    //  logo custom di localStorage agar tetap muncul setelah reload
+                    let customLogos = JSON.parse(localStorage.getItem('customCommunityLogos') || '{}');
+                    customLogos[key] = logoUrl;
+                    localStorage.setItem('customLogos', JSON.stringify(customLogos));
+                    closeCreateCommunityModal();
+                    renderCommunityList();
+                    selectCommunity(key);
+                }
+            };
+        }
+        //  tombol create community
+        const createBtn = document.querySelector('button[onclick*="Create Community"]');
+        if (createBtn) {
+            createBtn.setAttribute('onclick', 'openCreateCommunityModal()');
+        }
         // Inisialisasi sidebar komunitas saat load
         window.onload = function () {
             renderCommunityList();
-            // Jika ada komunitas yang sudah join, pilih yang pertama
+            // Jika ada komunitas yang sudah join, naik jadi yang pertama/paling atas
             if (joinedCommunities.length > 0) {
                 selectCommunity(joinedCommunities[0]);
             }
