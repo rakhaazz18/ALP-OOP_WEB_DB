@@ -549,8 +549,8 @@
                 chatBox.innerHTML = '<div class="text-gray-400 text-sm text-center">Belum ada pesan. Mulai chat dengan komunitas!</div>';
                 return;
             }
-            chatBox.innerHTML = history.map(msg => `
-                <div class="bubble-chat">
+            chatBox.innerHTML = history.map((msg, i) => `
+                <div class="bubble-chat group relative">
                     <img src="${msg.avatar}" class="bubble-avatar" alt="${msg.name}">
                     <div class="bubble-content">
                         <div class="bubble-name">${msg.name}</div>
@@ -562,9 +562,18 @@
                     <div class="bubble-tail">
                         <svg width="24" height="24" viewBox="0 0 24 24"><path d="M24 0 Q0 12 12 24" fill="none" stroke="#222" stroke-width="3"/></svg>
                     </div>
+                    <button onclick="deleteChatMessage(${i})" title="Hapus Pesan" class="absolute top-1 right-2 text-gray-400 hover:text-red-600 text-lg font-bold bg-white/80 rounded-full px-1 py-0.5 hidden group-hover:block" style="z-index:10;">&times;</button>
                 </div>
             `).join('');
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function deleteChatMessage(idx) {
+            let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            if (!chatHistory[selectedCommunityKey]) return;
+            chatHistory[selectedCommunityKey].splice(idx, 1);
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            renderChatHistory();
         }
 
         // Show modal
