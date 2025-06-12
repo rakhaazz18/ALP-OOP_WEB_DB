@@ -250,7 +250,7 @@
     </div>
 
     <script>
-        // Data komunitas dengan nama anggota unik dan avatar random
+        // Data komunitas 
         const communities = {
             'Peduli_Mks': {
                 name: 'Peduli_Mks',
@@ -408,7 +408,7 @@
         function renderCommunityList() {
             const list = document.getElementById('communityList');
             if (!list) return;
-            // Urutkan: komunitas yang sudah join (yang dipilih paling atas jika baru join)
+            // Pengurutan Komunitas
             let keys = Object.keys(communities);
             if (selectedCommunityKey && joinedCommunities.includes(selectedCommunityKey)) {
                 keys = [selectedCommunityKey, ...joinedCommunities.filter(k => k !== selectedCommunityKey), ...keys.filter(k => !joinedCommunities.includes(k) && k !== selectedCommunityKey)];
@@ -420,6 +420,7 @@
             list.innerHTML = keys.map(key => {
                 const c = communities[key];
                 const joined = joinedCommunities.includes(key);
+                // ga,mbar sebelumnya
                 let imgUrl = '';
                 if (customLogos[key]) {
                     imgUrl = customLogos[key];
@@ -521,12 +522,7 @@
                 if (chatBox.children.length === 1 && chatBox.children[0].classList.contains('text-gray-400')) {
                     chatBox.innerHTML = '';
                 }
-                // Format waktu (jam:menit, 2 digit)
-                const now = new Date();
-                const jam = now.getHours().toString().padStart(2, '0');
-                const menit = now.getMinutes().toString().padStart(2, '0');
-                const waktu = jam + '.' + menit;
-                // Buat bubble chat tanpa ikon centang
+                // Buat bubble chat sesuai gambar referensi
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble-chat';
                 bubble.innerHTML = `
